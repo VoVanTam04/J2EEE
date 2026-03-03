@@ -1,26 +1,29 @@
 package J2EE.bai4.service;
 
 import J2EE.bai4.model.Category;
+import J2EE.bai4.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.ArrayList;
 
 @Service
 public class CategoryService {
-    private List<Category> listCategory = new ArrayList<>();
-
-    public CategoryService() {
-        // Mock data giả lập
-        listCategory.add(new Category(1, "Điện thoại"));
-        listCategory.add(new Category(2, "Laptop"));
-        listCategory.add(new Category(3, "Phụ kiện"));
-    }
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     public List<Category> getAll() {
-        return listCategory;
+        return categoryRepository.findAll();
     }
 
-    public Category get(int id) {
-        return listCategory.stream().filter(c -> c.getId() == id).findFirst().orElse(null);
+    public Category get(Integer id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
+
+    public void saveCategory(Category category) {
+        categoryRepository.save(category);
+    }
+
+    public void deleteCategory(Integer id) {
+        categoryRepository.deleteById(id);
     }
 }

@@ -1,6 +1,8 @@
 package J2EE.bai4.service;
 
 import J2EE.bai4.model.Product;
+import J2EE.bai4.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,27 +11,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.Iterator;
+
 @Service
 public class ProductService {
-    private List<Product> listProduct = new ArrayList<>();
+    @Autowired
+    private ProductRepository productRepository;
 
     public List<Product> getAll() {
-        return listProduct;
+        return productRepository.findAll();
     }
 
     public void add(Product newProduct) {
-        listProduct.add(newProduct);
+        productRepository.save(newProduct);
     }
 
     // Xử lý lưu ảnh
     public void updateImage(Product newProduct, MultipartFile imageProduct) {
         if (!imageProduct.isEmpty()) {
             try {
-                Path dirImages = Paths.get("target/classes/static/images"); // Lưu vào target để thấy ngay
+                Path dirImages = Paths.get("target/classes/static/images");
                 if (!Files.exists(dirImages)) {
                     Files.createDirectories(dirImages);
                 }
@@ -46,27 +48,15 @@ public class ProductService {
             }
         }
     }
-    public Product get(int id) {
-        return listProduct.stream()
-                .filter(p -> p.getId() == id)
-                .findFirst()
-                .orElse(null);
+
+    public Product get(Integer id) {
+        return productRepository.findById(id).orElse(null);
     }
 
-    // 2. Thêm hàm Xóa sản phẩm
-    public void delete(int id) {
-        // Dùng Iterator để xóa an toàn trong List
-        Iterator<Product> iterator = listProduct.iterator();
-        while (iterator.hasNext()) {
-            Product p = iterator.next();
-            if (p.getId() == id) {
-                iterator.remove();
-                break;
-            }
-        }
+    public void delete(Integer id) {
+        productRepository.deleteById(id);
     }
 
-    // 3. Thêm hàm Cập nhật (Sửa)
     public void update(Product editProduct) {
         Product currentProduct = get(editProduct.getId());
         if (currentProduct != null) {
@@ -78,6 +68,7 @@ public class ProductService {
             if (editProduct.getImage() != null && !editProduct.getImage().isEmpty()) {
                 currentProduct.setImage(editProduct.getImage());
             }
+            productRepository.save(currentProduct);
         }
     }
 }
