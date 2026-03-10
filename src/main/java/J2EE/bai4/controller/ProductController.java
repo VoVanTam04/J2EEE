@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 @Controller
 @RequestMapping("/products")
 public class ProductController {
@@ -30,14 +32,14 @@ public class ProductController {
         return "product/products";
     }
 
-    @GetMapping("/create")
+    @GetMapping("/add")
     public String create(Model model) {
         model.addAttribute("product", new Product());
         model.addAttribute("categories", categoryService.getAll());
         return "product/create";
     }
 
-    @PostMapping("/create")
+    @PostMapping("/add")
     public String create(@Valid Product newProduct,
                          BindingResult result,
                          @RequestParam("imageProduct") MultipartFile imageProduct,
@@ -111,8 +113,13 @@ public class ProductController {
     // --- PHẦN MỚI: CHỨC NĂNG DELETE (XÓA) ---
     
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable int id) {
-        productService.delete(id);
+    public String delete(@PathVariable int id, RedirectAttributes redirectAttributes) {
+        try {
+            productService.delete(id);
+            redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm thành công.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/products";
     }
 }

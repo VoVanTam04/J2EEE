@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{_layout}">
+
+<head>
+    <title>Đặt hàng</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary"><i class="fa-solid fa-cart-plus me-2"></i>Đặt hàng</h2>
+            <a href="/order" class="btn btn-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại</a>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <form th:action="@{/order/create}" th:object="${orderForm}" method="post">
+            <div class="card">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i>Chọn sản phẩm và số lượng</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="py-3 ps-3">Hình ảnh</th>
+                                    <th class="py-3">Tên sản phẩm</th>
+                                    <th class="py-3">Giá</th>
+                                    <th class="py-3" style="width: 150px;">Số lượng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item, stat : ${orderForm.items}">
+                                    <td class="ps-3">
+                                        <img th:if="${products[stat.index].image != null}" 
+                                             th:src="@{'/images/' + ${products[stat.index].image}}" 
+                                             width="50" height="50" class="border rounded" alt="Product"/>
+                                        <span th:unless="${products[stat.index].image != null}" class="badge bg-secondary">No Image</span>
+                                    </td>
+                                    <td th:text="${products[stat.index].name}"></td>
+                                    <td class="text-success fw-bold" th:text="${#numbers.formatDecimal(products[stat.index].price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                                    <td>
+                                        <input type="hidden" th:field="*{items[__${stat.index}__].productId}" />
+                                        <input type="number" th:field="*{items[__${stat.index}__].quantity}" 
+                                               class="form-control form-control-sm" min="0" placeholder="0" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-check me-1"></i> Xác nhận đặt hàng
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

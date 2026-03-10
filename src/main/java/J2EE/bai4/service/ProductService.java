@@ -1,6 +1,7 @@
 package J2EE.bai4.service;
 
 import J2EE.bai4.model.Product;
+import J2EE.bai4.repository.OrderItemRepository;
 import J2EE.bai4.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,8 @@ import java.util.UUID;
 public class ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     public List<Product> getAll() {
         return productRepository.findAll();
@@ -54,6 +57,9 @@ public class ProductService {
     }
 
     public void delete(Integer id) {
+        if (orderItemRepository.existsByProductId(id)) {
+            throw new IllegalStateException("Không thể xóa sản phẩm vì đã có trong đơn hàng.");
+        }
         productRepository.deleteById(id);
     }
 

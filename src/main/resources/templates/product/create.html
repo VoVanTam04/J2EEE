@@ -15,7 +15,7 @@
                         <h4 class="mb-0"><i class="fa-solid fa-circle-plus me-2"></i>Thêm Sản Phẩm Mới</h4>
                     </div>
                     <div class="card-body p-4">
-                        <form th:action="@{/products/create}" th:object="${product}" method="post" enctype="multipart/form-data">
+                        <form th:action="@{/products/add}" th:object="${product}" method="post" enctype="multipart/form-data">
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Tên sản phẩm:</label>
