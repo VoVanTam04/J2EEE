@@ -4,6 +4,7 @@ import J2EE.bai4.dto.OrderCreateForm;
 import J2EE.bai4.dto.OrderItemRequest;
 import J2EE.bai4.model.Order;
 import J2EE.bai4.model.Product;
+import J2EE.bai4.service.CartService;
 import J2EE.bai4.service.OrderService;
 import J2EE.bai4.service.ProductService;
 import org.springframework.security.core.Authentication;
@@ -25,10 +26,12 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ProductService productService;
+    private final CartService cartService;
 
-    public OrderController(OrderService orderService, ProductService productService) {
+    public OrderController(OrderService orderService, ProductService productService, CartService cartService) {
         this.orderService = orderService;
         this.productService = productService;
+        this.cartService = cartService;
     }
 
     @GetMapping("")
@@ -65,6 +68,28 @@ public class OrderController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/order/create";
+        }
+        return "redirect:/order";
+    }
+
+    @PostMapping("/checkout")
+    public String checkout(Authentication authentication, RedirectAttributes redirectAttributes) {
+        if (cartService.getItems().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Giỏ hàng đang trống!");
+            return "redirect:/cart";
+        }
+        
+        List<OrderItemRequest> itemRequests = cartService.getItems().stream()
+                .map(item -> new OrderItemRequest(item.getProductId(), item.getQuantity()))
+                .collect(Collectors.toList());
+
+        try {
+            orderService.createOrder(authentication.getName(), itemRequests);
+            cartService.clear();
+            redirectAttributes.addFlashAttribute("success", "Đặt hàng thành công từ giỏ hàng!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/cart";
         }
         return "redirect:/order";
     }

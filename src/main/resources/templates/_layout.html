@@ -16,10 +16,23 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/products"><i class="fa-solid fa-store me-2"></i>My Shop</a>
-            <div class="navbar-nav ms-auto">
+            <div class="navbar-nav ms-auto align-items-center">
                 <a class="nav-link" href="/products"><i class="fa-solid fa-box me-1"></i>Sản phẩm</a>
-                <a class="nav-link" href="/categories"><i class="fa-solid fa-tags me-1"></i>Danh mục</a>
-                <a class="nav-link" href="/order" sec:authorize="hasRole('USER')"><i class="fa-solid fa-cart-shopping me-1"></i>Đơn hàng</a>
+                <a class="nav-link" href="/categories" sec:authorize="hasRole('ADMIN')"><i class="fa-solid fa-tags me-1"></i>Danh mục</a>
+                <a class="nav-link" href="/cart" sec:authorize="hasAnyRole('USER', 'ADMIN')"><i class="fa-solid fa-cart-shopping me-1"></i>Giỏ hàng</a>
+                <a class="nav-link" href="/order" sec:authorize="hasRole('USER')"><i class="fa-solid fa-file-invoice-dollar me-1"></i>Đơn hàng</a>
+                
+                <div sec:authorize="!isAuthenticated()" class="d-flex ms-3">
+                    <a href="/login" class="btn btn-outline-light btn-sm me-2">Đăng nhập</a>
+                    <a href="/register" class="btn btn-warning btn-sm text-dark">Đăng ký</a>
+                </div>
+                
+                <div sec:authorize="isAuthenticated()" class="d-flex ms-3 align-items-center">
+                    <span class="text-light me-3"><i class="fa-solid fa-user-circle me-1"></i><span sec:authentication="name"></span></span>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-right-from-bracket me-1"></i>Đăng xuất</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>

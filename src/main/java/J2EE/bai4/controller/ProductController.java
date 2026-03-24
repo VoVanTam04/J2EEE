@@ -4,6 +4,7 @@ import J2EE.bai4.model.Category; // Nhớ import Category
 import J2EE.bai4.model.Product;
 import J2EE.bai4.service.CategoryService;
 import J2EE.bai4.service.ProductService;
+import org.springframework.data.domain.Page;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,8 +28,27 @@ public class ProductController {
     private CategoryService categoryService;
 
     @GetMapping("")
-    public String index(Model model) {
-        model.addAttribute("listproduct", productService.getAll());
+    public String index(Model model,
+                        @RequestParam(value = "keyword", defaultValue = "") String keyword,
+                        @RequestParam(value = "categoryId", required = false) Integer categoryId,
+                        @RequestParam(value = "page", defaultValue = "1") int page,
+                        @RequestParam(value = "sortField", defaultValue = "price") String sortField,
+                        @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir) {
+
+        String searchKeyword = keyword.trim().isEmpty() ? null : keyword.trim();
+        Page<Product> productPage = productService.getProductsWithPagination(searchKeyword, categoryId, page, sortField, sortDir);
+
+        model.addAttribute("listproduct", productPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalItems", productPage.getTotalElements());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("categories", categoryService.getAll());
+
         return "product/products";
     }
 
@@ -73,7 +93,7 @@ public class ProductController {
         return "redirect:/products";
     }
     @GetMapping("/edit/{id}")
-    public String edit(@PathVariable int id, Model model) {
+    public String edit(@PathVariable("id") int id, Model model) {
         Product product = productService.get(id);
         if (product == null) {
             return "redirect:/products"; // Không thấy thì quay về danh sách
@@ -113,7 +133,7 @@ public class ProductController {
     // --- PHẦN MỚI: CHỨC NĂNG DELETE (XÓA) ---
     
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
         try {
             productService.delete(id);
             redirectAttributes.addFlashAttribute("success", "Đã xóa sản phẩm thành công.");

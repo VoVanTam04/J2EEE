@@ -4,6 +4,10 @@ import J2EE.bai4.model.Product;
 import J2EE.bai4.repository.OrderItemRepository;
 import J2EE.bai4.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +30,12 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    public Page<Product> getProductsWithPagination(String keyword, Integer categoryId, int pageNum, String sortField, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(pageNum - 1, 5, sort);
+        return productRepository.searchAndFilter(keyword, categoryId, pageable);
+    }
+
     public void add(Product newProduct) {
         productRepository.save(newProduct);
     }
@@ -34,16 +44,22 @@ public class ProductService {
     public void updateImage(Product newProduct, MultipartFile imageProduct) {
         if (!imageProduct.isEmpty()) {
             try {
-                Path dirImages = Paths.get("target/classes/static/images");
-                if (!Files.exists(dirImages)) {
-                    Files.createDirectories(dirImages);
-                }
+                Path dirTarget = Paths.get("target/classes/static/images");
+                Path dirSrc = Paths.get("src/main/resources/static/images");
+                
+                if (!Files.exists(dirTarget)) Files.createDirectories(dirTarget);
+                if (!Files.exists(dirSrc)) Files.createDirectories(dirSrc);
 
                 // Đổi tên file để tránh trùng lặp
                 String newFileName = UUID.randomUUID() + "_" + imageProduct.getOriginalFilename();
 
-                Path pathFileUpload = dirImages.resolve(newFileName);
-                Files.copy(imageProduct.getInputStream(), pathFileUpload, StandardCopyOption.REPLACE_EXISTING);
+                // Lưu vào target để hiện thị ngay lập tức
+                Path pathTarget = dirTarget.resolve(newFileName);
+                Files.copy(imageProduct.getInputStream(), pathTarget, StandardCopyOption.REPLACE_EXISTING);
+
+                // Lưu vào src để không bị mất khi Restart hay Clean project
+                Path pathSrc = dirSrc.resolve(newFileName);
+                Files.copy(pathTarget, pathSrc, StandardCopyOption.REPLACE_EXISTING);
 
                 newProduct.setImage(newFileName);
             } catch (IOException e) {

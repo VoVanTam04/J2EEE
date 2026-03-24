@@ -28,12 +28,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.userDetailsService(accountService)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/products/add", "/products/edit", "/products/edit/**", "/products/delete/**").hasRole("ADMIN")
-                        .requestMatchers("/categories/create", "/categories/edit", "/categories/edit/**", "/categories/delete/**").hasRole("ADMIN")
+                        .requestMatchers("/products/add", "/products/edit", "/products/edit/**", "/products/delete/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/categories/create", "/categories/edit", "/categories/edit/**",
+                                "/categories/delete/**")
+                        .hasRole("ADMIN")
                         .requestMatchers("/order", "/order/**").hasRole("USER")
-                        .requestMatchers("/products", "/products/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/", "/products", "/products/**").permitAll()
                         .requestMatchers("/categories", "/categories/**").hasAnyRole("ADMIN")
-                        .requestMatchers("/images/**", "/css/**", "/js/**", "/error").permitAll()
+                        .requestMatchers("/images/**", "/css/**", "/js/**", "/error", "/register").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .defaultSuccessUrl("/products", true));
